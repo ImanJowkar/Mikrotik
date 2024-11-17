@@ -48,11 +48,19 @@ ip dhcp-client/set interface=ether1 add-default-route=yes use-peer-ntp=yes use-p
 ip address/add interface=ether3 address=10.10.10.1/24
 
 
+```
 
+## give Internet access to your clients
+![img](img/1.png)
+
+```
 
 
 
 ```
+
+
+
 
 * disable neighbor discovery
 
@@ -75,6 +83,12 @@ ip address/add interface=ether3 address=10.10.10.1/24
 ```
 
 tool/ip-scan interface=ether1
+```
+## manage user and groups in mikrotik
+
+```
+
+
 ```
 
 
@@ -108,11 +122,46 @@ set 3 action=remote
 
 
 
+```
+
+
+## upgrade-downgrade(2-40)
 
 
 
+## desgin skin (only works on web interface)
+login to user mikrotik on web ui with admin priveleges, and create new skin(in the Desgin Skin section)
+
+
+## Backup and Restore
+we have two types of backups
+* full backup (good for router itself)   .backup
+* specific (export)           .rsc
+
+1) full backup
+![img](img/2.png)
+```
+# backup
+go to the files and click on backup(you can set password on the backup file too.)
+
+
+# restore go to the files and choose a file and then click on restore and reboot the system
+```
+
+1) specific backup
+```
+# Backup
+export      # all static configuration
+
+ip address/export
+ip firewall/export file=firewall.rsc
+mpls/export file=mpls.rsc
 
 
 
+# Restore
+import firewall.rsc
 
 ```
+
+## Netinstall
