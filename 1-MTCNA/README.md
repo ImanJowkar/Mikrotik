@@ -5,7 +5,6 @@
 * what is differece between router-os vs router board
 * `package section in version-6 vs version-7`
 
-* product Naming
 
 
 ## start - Basic configuration
@@ -100,8 +99,12 @@ tool/ip-scan interface=ether1
 # synchronize the date and time in your device
 /system ntp client set enabled=yes
 /system ntp client servers add address=ntp.day.ir
+
+# v6
 /system clockset time-zone-name=Asia/Tehran
 
+# v7
+system/clock/set time-zone-name=Asia/Tehran
 
 /system logging action set 3 remote=<syslog-server-ip> src-address=<src-ip-address>
 /system logging
@@ -121,6 +124,43 @@ set 3 action=remote
 /ip firewall filter add action=add-src-to-address-list address-list=ping-router address-list-timeout=none-static chain=input protocol=icmp
 
 
+
+
+
+
+
+# LOGQL
+
+
+{hostname="10.10.1.1"}
+
+{hostname=~".+", hostname!="192.168.229.170"}   # all logs but not for "192.168.229.170"
+
+{hostname=~".+", hostname!="192.168.229.170"} |= "down"
+{hostname=~"10.10.1.100|10.11.1.2"} |= "down"
+
+{hostname=~".+"} |~ "[Dd]own"   # search for down or Down
+{hostname=~".+"} |~ "down|Down"  # same as above
+
+
+
+
+# SSH dashboard 
+
+{hostname=~".+"} |~ "ssh|SSH"
+{job="syslog"} |~ "ssh|SSH" |~ "Failed"
+
+{job="syslog"} |~ "ssh|SSH" |~ "Failed" |~ "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+
+
+
+
+{job="syslog"} |= "Failed" 
+
+
+
+# annotation
+{hostname=~".+"} |~ "ssh|SSH"  |~ "Failed"
 
 ```
 
@@ -165,3 +205,5 @@ import firewall.rsc
 ```
 
 ## Netinstall
+
+## product Naming
