@@ -57,11 +57,25 @@ ip address/add interface=ether3 address=10.10.10.1/24
 * dhcp client
 * vpns
 ```
+set interface=ether2 add-default-route=yes use-peer-ntp=yes use-peer-dns=yes
+
+ip address/add interface=ether4 address=10.10.10.1/24
 
 
+/ip pool
+add name=dhcp_pool0 ranges=10.10.10.2-10.10.10.254
+
+/ip dhcp-server
+add address-pool=dhcp_pool0 interface=ether4 name=dhcp1
+/ip dhcp-server network
+add address=10.10.10.0/24 dns-server=10.10.10.1 gateway=10.10.10.1
+
+/ip firewall nat
+add action=masquerade chain=srcnat
 
 
-
+/ip firewall nat
+add action=masquerade chain=srcnat
 ```
 
 
@@ -89,6 +103,204 @@ ip address/add interface=ether3 address=10.10.10.1/24
 
 tool/ip-scan interface=ether1
 ```
+
+
+## DHCP configuration on Mikrotik
+* DHCP-server
+* DHCP-client
+* DHCP-relay
+
+* for security we can use dhcp-snooping, or we can use `alert` in mikrotik for searching another dhcp server exist in the network.
+
+
+![img](img/3.png)
+
+
+#### deploy dhcp server when we have multi-vlans
+![img](img/4.png)
+
+```
+# IOU1
+--------------------
+vlan 10
+name Accounting
+vlan 20
+name IT
+
+
+interface ethernet 0/2
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport nonegotiate
+
+
+int range eth 0/0-1
+ switchport access vlan 10
+ switchport mode access
+ switchport nonegotiate
+
+
+int range eth 0/3, eth 1/0
+ switchport access vlan 20
+ switchport mode access
+ switchport nonegotiate
+
+---------------------
+
+
+# Mikrotik
+
+----------------------
+
+/interface vlan
+add interface=ether4 name=vlan10 vlan-id=10
+add interface=ether4 name=vlan20 vlan-id=20
+
+
+/ip address
+add address=10.10.10.1/24 interface=vlan10 network=10.10.10.0
+add address=10.10.20.1/24 interface=vlan20 network=10.10.20.0
+
+
+/ip pool
+add name=dhcp_pool3 ranges=10.10.10.2-10.10.10.254
+add name=dhcp_pool4 ranges=10.10.20.2-10.10.20.
+
+
+
+/ip dhcp-server
+add address-pool=dhcp_pool3 interface=vlan10 name=dhcp-vlan10
+add address-pool=dhcp_pool4 interface=vlan20 name=dhcp-vlan20
+/ip dhcp-server network
+add address=10.10.10.0/24 dns-server=10.10.10.1 gateway=10.10.10.1
+add address=10.10.20.0/24 dns-server=10.10.10.1 gateway=10.10.20.
+
+----------------------
+
+```
+
+#### deploy dhcp-relay
+![dhcp-relay](img/5.png)
+
+```
+# IOU1
+--------------------
+vlan 10
+name Accounting
+vlan 20
+name IT
+vlan 30
+name Servers
+exit
+
+interface ethernet 0/2
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport nonegotiate
+
+
+int range eth 0/0-1
+ switchport access vlan 10
+ switchport mode access
+ switchport nonegotiate
+
+
+int range eth 0/3, eth 1/0
+ switchport access vlan 20
+ switchport mode access
+ switchport nonegotiate
+
+
+int eth 1/3
+ switchport access vlan 30
+ switchport mode access
+ switchport nonegotiate
+---------------------
+
+
+# Mikrotik
+
+----------------------
+
+/interface vlan
+add interface=ether4 name=vlan10 vlan-id=10
+add interface=ether4 name=vlan20 vlan-id=20
+add interface=ether4 name=vlan30 vlan-id=30
+
+/ip address
+add address=10.10.10.1/24 interface=vlan10 network=10.10.10.0
+add address=10.10.20.1/24 interface=vlan20 network=10.10.20.0
+add address=10.10.30.1/24 interface=vlan30 network=10.10.30.0
+
+
+
+
+
+/ip dhcp-relay
+add dhcp-server=10.10.30.10 disabled=no interface=vlan10 name=relay-vlan10
+add dhcp-server=10.10.30.10 disabled=no interface=vlan20 name=relay-vlan20
+add dhcp-server=10.10.30.10 disabled=no interface=vlan30 name=relay-vlan3
+
+----------------------
+
+
+
+# DHCP server
+
+----------------------
+
+interface fastEthernet 0/0
+ip address 10.10.30.10 255.255.255.0
+
+
+
+
+
+ip dhcp pool vlan-10
+ network 10.10.10.0 255.255.255.0
+ dns-server 10.10.10.1 
+ default-router 10.10.10.1
+
+
+ip dhcp pool vlan-20
+ network 10.10.20.0 255.255.255.0
+ dns-server 10.10.10.1 
+ default-router 10.10.20.1
+
+ip dhcp pool vlan-30
+ network 10.10.30.0 255.255.255.0
+ dns-server 10.10.10.1 
+ default-router 10.10.30.1
+
+
+
+ip dhcp excluded-address 10.10.10.1 10.10.10.10
+ip dhcp excluded-address 10.10.20.1 10.10.20.10
+ip dhcp excluded-address 10.10.30.1 10.10.30.10
+
+
+
+sh ip dhcp binding
+
+----------------------
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+# tools for administration of your mikrotik
+
 ## manage user and groups in mikrotik
 
 ```
@@ -194,7 +406,7 @@ go to the files and click on backup(you can set password on the backup file too.
 # restore go to the files and choose a file and then click on restore and reboot the system
 ```
 
-1) specific backup
+2) specific backup
 ```
 # Backup
 export      # all static configuration
