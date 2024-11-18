@@ -52,7 +52,13 @@ ip address/add interface=ether3 address=10.10.10.1/24
 ## give Internet access to your clients
 ![img](img/1.png)
 
+`how we can set ip address on an interface:` 
+* manual ip addressing
+* dhcp client
+* vpns
 ```
+
+
 
 
 
