@@ -288,9 +288,33 @@ sh ip dhcp binding
 
 
 ```
+#### dhcp alert
+![img](img/6.png)
+```
+/ip dhcp-server alert
+add alert-timeout=30s disabled=no interface=ether2 on-alert=" log/error message="another dhcp server found please do something"
+
+
+```
+
+
+#### dhcp snooping
+
+
+```
 
 
 
+
+```
+
+
+## Bridge
+
+```
+
+
+```
 
 
 
