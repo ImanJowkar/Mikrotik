@@ -300,11 +300,32 @@ add alert-timeout=30s disabled=no interface=ether2 on-alert=" log/error message=
 
 #### dhcp snooping
 
-
+![img](img/7.png)
 ```
+# Switch
+
+ip dhcp snooping
+ip dhcp snooping vlan 1
+no ip dhcp snooping information option  # in case you are not using dhcp-relay
+! ip dhcp snooping vlan 1,2,3
 
 
+interface ethernet 3/1
+ip dhcp snooping trust
 
+do sh ip dhcp snooping
+do sh ip dhcp snooping binding
+
+# limit the number of packet/second accepting from trusted interface
+int range eth3/3, eth 3/2, eth 2/2
+ip dhcp snooping limit rate 10
+do sh ip dhcp snooping
+
+do sh ip dhcp snooping statistics
+
+
+errdisable recovery cause dhcp-rate-limit
+errdisable recovery interval 30
 
 ```
 
